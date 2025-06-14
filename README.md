@@ -1,4 +1,4 @@
-![Collision IQ Chatbot](collision-logo.png)
+![Collision IQ logo featuring a stylized car and shield, conveying protection and support in a professional and reassuring tone. The logo appears above the title Collision IQ Chatbot. The background is clean and minimal, emphasizing the logo and text.]Collision IQ Chatbot](collision-logo.png)
 
 # Collision-IQ-Chatbot
 
@@ -29,4 +29,3 @@ MIT License
 
 ![Python](https://img.shields.io/badge/Python-3.9-blue)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-
