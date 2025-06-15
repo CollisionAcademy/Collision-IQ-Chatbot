@@ -1,0 +1,62 @@
+# ============================================================
+# Google Cloud App Hosting (for Cloud Run) Configuration
+# ============================================================
+
+run:
+  # The name of your deployed Cloud Run service
+  service: collision-iq-api
+  region: us-central1
+  cpu: 1
+  memoryMiB: 512
+  timeoutSeconds: 300
+  maxInstances: 3
+  concurrency: 80
+  allowUnauthenticated: true
+
+env:
+  - name: NODE_ENV
+    value: production
+
+  # --- Gemini API Settings ---
+  - name: GEMINI_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: gemini-api-key
+        key: key
+
+  - name: GEMINI_MODEL
+    value: models/gemini-2.5-flash
+
+  # --- Google Drive (optional) ---
+  - name: GOOGLE_DRIVE_FILE_ID
+    valueFrom:
+      secretKeyRef:
+        name: google-drive-file-id
+        key: id
+
+  - name: GOOGLE_SERVICE_ACCOUNT_EMAIL
+    valueFrom:
+      secretKeyRef:
+        name: google-service-account
+        key: email
+
+  - name: GOOGLE_PRIVATE_KEY
+    valueFrom:
+      secretKeyRef:
+        name: google-service-account
+        key: private_key
+
+  # --- Logging ---
+  - name: LOG_LEVEL
+    value: info
+
+build:
+  # Build with Cloud Buildpacks or Dockerfile (auto-detects)
+  type: docker
+  dockerfile: Dockerfile
+  context: .
+
+# Route configuration for web/API routing
+routes:
+  - path: /.*
+    service: collision-iq-api
