@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 Flask
 firebase-admin
 requests
 gunicorn
+=======
+flask
+requests
+>>>>>>> c78518c (Add files via upload)
