@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collision IQ Chatbot</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">Collision IQ Assistant</div>
+    <div class="chat-log" id="chatLog"></div>
+    <div class="chat-input-container">
+      <select id="langSelect">
+        <option value="en">🇺🇸 EN</option>
+        <option value="es">🇪🇸 ES</option>
+        <option value="it">🇮🇹 IT</option>
+        <option value="ru">🇷🇺 RU</option>
+        <option value="uk">🇺🇦 UK</option>
+        <option value="zh">🇨🇳 ZH</option>
+        <option value="ja">🇯🇵 JA</option>
+      </select>
+      <input type="text" id="userInput" placeholder="Type your question..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
