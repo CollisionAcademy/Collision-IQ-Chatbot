@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 Flask
 firebase-admin
 requests
@@ -7,3 +8,7 @@ gunicorn
 flask
 requests
 >>>>>>> c78518c (Add files via upload)
+=======
+pip install gunicorn
+pip freeze > requirements.txt
+>>>>>>> af14bd4 (Update requirements.txt)
