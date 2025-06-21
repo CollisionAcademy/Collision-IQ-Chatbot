@@ -1,23 +1,5 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-Flask
 firebase-admin
 requests
-gunicorn
-=======
-flask
-requests
->>>>>>> c78518c (Add files via upload)
-=======
-pip install gunicorn
-pip freeze > requirements.txt
->>>>>>> af14bd4 (Update requirements.txt)
-=======
-Flask==2.3.2
 gunicorn==21.2.0
-<<<<<<< HEAD
-...
->>>>>>> f5ceeec (Update requirements.txt)
-=======
->>>>>>> 6ee36b0 (Update requirements.txt)
+Flask==2.3.2
+fs==2.4.16
