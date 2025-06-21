@@ -2,20 +2,20 @@ from flask import Flask, request, jsonify
 import logging
 
 app = Flask(__name__)
-logging.basicConfig(level=logging.INFO)  # ✅ Add this line
+logging.basicConfig(level=logging.INFO)
 
 @app.route('/', methods=['POST'])
 def webhook():
     req = request.get_json()
-    user_input = req.get("text", {}).get("text", [""])[0]
-    logging.info(f"User said: {user_input}")  # ✅ Replace print()
+    logging.info(f"Received request: {req}")
 
+    # Step 2: CX-style response (change logic here as needed)
     response = {
         "fulfillment_response": {
             "messages": [
                 {
                     "text": {
-                        "text": ["✅ Webhook reached successfully!"]
+                        "text": [f"✅ Echo: You said '{req.get('text', 'nothing')}''"]
                     }
                 }
             ]
@@ -27,3 +27,4 @@ def webhook():
 @app.route('/', methods=['GET'])
 def index():
     return "✅ Flask app is running on Heroku!"
+
