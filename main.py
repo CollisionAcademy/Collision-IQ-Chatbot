@@ -3,13 +3,28 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 @app.route('/', methods=['POST'])
-def handle_webhook():
-    return jsonify({
+def webhook():
+    req = request.get_json()
+
+    # Example CX logic
+    user_input = req.get('text', 'No input')
+    print(f"User said: {user_input}")
+
+    response = {
         "fulfillment_response": {
-            "messages": [{"text": {"text": ["✅ Webhook reached successfully!"]}}]
+            "messages": [
+                {
+                    "text": {
+                        "text": ["✅ Webhook reached successfully!"]
+                    }
+                }
+            ]
         }
-    })
+    }
+
+    return jsonify(response)
 
 @app.route('/', methods=['GET'])
-def home():
+def index():
     return "✅ Flask app is running on Heroku!"
+
