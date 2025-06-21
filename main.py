@@ -13,6 +13,3 @@ def handle_webhook():
 @app.route('/', methods=['GET'])
 def home():
     return "✅ Flask app is running on Heroku!"
-
-if __name__ == '__main__':
-    app.run()
