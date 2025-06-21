@@ -1,17 +1,7 @@
 from flask import Flask, request, jsonify
-import firebase_admin
-from firebase_admin import credentials, firestore
 
 # Initialize Flask app
 app = Flask(__name__)
-
-# Initialize Firebase Admin SDK
-if not firebase_admin._apps:
-    cred = credentials.Certificate("serviceAccountKey.json")
-    firebase_admin.initialize_app(cred)
-
-# Get Firestore client
-db = firestore.client()
 
 # Webhook route
 @app.route('/', methods=['POST'])
@@ -33,19 +23,6 @@ def webhook():
     }
 
     return jsonify(response)
-
-# Firestore GET route
-@app.route('/get-todo', methods=['GET'])
-def get_todo():
-    try:
-        doc_ref = db.collection('todos').document('3apQDtlrQA46w43ON2Ul')
-        doc = doc_ref.get()
-        if doc.exists:
-            return jsonify(doc.to_dict())
-        else:
-            return jsonify({"error": "Document not found"}), 404
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 # Default route
 @app.route('/', methods=['GET'])
