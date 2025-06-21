@@ -16,5 +16,8 @@ pip freeze > requirements.txt
 =======
 Flask==2.3.2
 gunicorn==21.2.0
+<<<<<<< HEAD
 ...
 >>>>>>> f5ceeec (Update requirements.txt)
+=======
+>>>>>>> 6ee36b0 (Update requirements.txt)
