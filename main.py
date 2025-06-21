@@ -15,4 +15,4 @@ def home():
     return "✅ Flask app is running on Heroku!"
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
