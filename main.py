@@ -8,7 +8,10 @@ def webhook():
 
     # Example CX logic
     user_input = req.get('text', 'No input')
-    print(f"User said: {user_input}")
+    import logging
+
+logging.basicConfig(level=logging.INFO)
+logging.info(f"User said: {user_input}")
 
     response = {
         "fulfillment_response": {
