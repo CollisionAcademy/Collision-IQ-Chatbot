@@ -12,10 +12,9 @@
 - Integrated deployment via [Heroku/Streamlit/etc].
 
 ## Tech Stack
-- Python (Backend logic)
-- HTML/CSS (UI)
-- [Flask / FastAPI / Streamlit] (Framework)
-- Deployed on [Heroku/Vercel/Other]
+- Integrated deployment via Streamlit.
+- Streamlit (Framework)
+- Deployed on Heroku
 
 ## How to Use
 1. Clone the repo
@@ -24,4 +23,10 @@
 
 ## License
 MIT License
+
+## Live Demo
+👉 [Try the Chatbot](https://collision-iq-chatbot.herokuapp.com)  
+
+![Python](https://img.shields.io/badge/Python-3.9-blue)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
