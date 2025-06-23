@@ -1,4 +1,4 @@
-![Collision IQ Chatbot] (Collision Academy Logos_Collision Academy Logo Horizontal - Color.png)
+![Collision IQ Chatbot](collision-logo.png)
 
 # Collision-IQ-Chatbot
 
