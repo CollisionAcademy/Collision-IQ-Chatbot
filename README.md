@@ -1,3 +1,5 @@
+![Collision IQ Chatbot] (Collision Academy Logos_Collision Academy Logo Horizontal - Color.png)
+
 # Collision-IQ-Chatbot
 
 **Collision IQ Chatbot** is a conversational AI assistant built to help:
