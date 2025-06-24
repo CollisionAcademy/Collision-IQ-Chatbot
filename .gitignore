@@ -34,7 +34,7 @@ package-lock.json
 package.json
 =======
 # Firebase credentials
-serviceAccountKey.json
+ServiceAccountKey.json
 token.json
 
 # Python cache
