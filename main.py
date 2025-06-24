@@ -2,16 +2,27 @@ from flask import Flask, request, jsonify
 import firebase_admin
 from firebase_admin import credentials, firestore
 import os
+import json
+import base64
+import firebase_admin
+from firebase_admin import credentials, firestore
+from flask import Flask, request, jsonify
 
-app = Flask(__name__)
+# Load Firebase credentials from base64 environment variable
+base64_key = os.environ.get('GOOGLE_APPLICATION_KEY')
+if not base64_key:
+    raise Exception("GOOGLE_APPLICATION_KEY environment variable not set.")
 
-# Initialize Firebase Admin SDK using a local service account key
-if not firebase_admin._apps:
-    cred = credentials.Certificate("serviceAccountKey.json")
-    firebase_admin.initialize_app(cred)
+decoded_key = base64.b64decode(base64_key).decode('utf-8')
+service_account_info = json.loads(decoded_key)
+cred = credentials.Certificate(service_account_info)
+firebase_admin.initialize_app(cred)
 
 # Initialize Firestore client
 db = firestore.client()
+
+# Set up Flask app
+app = Flask(__name__)
 
 # Webhook endpoint (Dialogflow CX or other POST services)
 @app.route('/', methods=['POST'])
