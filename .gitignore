@@ -1,23 +1,33 @@
+# Byte-compiled / cache files
 __pycache__/
 *.pyc
+*.pyo
+
+# Environment and credentials
 .env
+.firebase.json
+.serviceAccountKey.json
 serviceAccountKey.json
-*.sqlite3
-instance/
+
+# Logs and debug
 *.log
-.vercel
+*.sqlite3
+
+# Node-related
 node_modules/
 client/node_modules/
 api/node_modules/
+
+# Build / dist folders
 dist/
 client/dist/
 api/dist/
-.env
-.env.*
-*.log
-.DS_Store
+
+# VSCode and IDE settings
 .vscode/
 *.json
-!package.json
-firebase.json
-*.serviceAccount*.json
+.DS_Store
+
+# Dependencies
+package-lock.json
+package.json
