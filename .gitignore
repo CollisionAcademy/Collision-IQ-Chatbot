@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Byte-compiled / cache files
 __pycache__/
 *.pyc
@@ -31,3 +32,16 @@ api/dist/
 # Dependencies
 package-lock.json
 package.json
+=======
+# Firebase credentials
+serviceAccountKey.json
+token.json
+
+# Python cache
+__pycache__/
+*.pyc
+
+# VS Code & system files
+.vscode/
+.DS_Store
+>>>>>>> 016fc18 (Update .gitignore)
