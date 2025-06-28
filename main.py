@@ -1,30 +1,21 @@
-import os
-import json
 from flask import Flask, request, jsonify
 import firebase_admin
 from firebase_admin import credentials, firestore
+import os
+import json
 
-# --- Load Firebase credentials from Heroku config var ---
-cred_json = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
-if not cred_json:
-    raise Exception("GOOGLE_APPLICATION_CREDENTIALS_JSON not set in environment.")
-
-cred_dict = json.loads(cred_json)
-cred = credentials.Certificate(cred_dict)
+# Load Firebase credentials from environment variable
+cred_json = json.loads(os.environ["GOOGLE_APPLICATION_CREDENTIALS_JSON"])
+cred = credentials.Certificate(cred_json)
 firebase_admin.initialize_app(cred)
 
-# --- Initialize Firestore client ---
+# Initialize Firestore
 db = firestore.client()
 
-# --- Set up Flask app ---
+# Set up Flask
 app = Flask(__name__)
 
-# --- Root route for health check ---
-@app.route('/', methods=['GET'])
-def index():
-    return "✅ Flask app is running on Heroku!"
-
-# --- Webhook endpoint (Dialogflow CX or other POST services) ---
+# Webhook (POST)
 @app.route('/', methods=['POST'])
 def webhook():
     req = request.get_json()
@@ -44,7 +35,7 @@ def webhook():
     }
     return jsonify(response)
 
-# --- Firestore test route (GET a specific document) ---
+# Firestore test (GET)
 @app.route('/get-todo', methods=['GET'])
 def get_todo():
     try:
@@ -57,6 +48,7 @@ def get_todo():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# --- Run locally (if needed) ---
-if __name__ == '__main__':
-    app.run(debug=True)
+# Health check (GET /)
+@app.route('/', methods=['GET'])
+def index():
+    return "✅ Flask app is running on Heroku!"
