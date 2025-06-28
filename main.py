@@ -15,7 +15,12 @@ if not base64_key:
 
 decoded_key = base64.b64decode(base64_key).decode('utf-8')
 service_account_info = json.loads(decoded_key)
-cred = credentials.Certificate("serviceAccountKey.json")
+import json
+import os
+from firebase_admin import credentials
+
+cred_json = json.loads(os.environ["GOOGLE_APPLICATION_CREDENTIALS_JSON"])
+cred = credentials.Certificate(cred_json)
 firebase_admin.initialize_app(cred)
 
 # Initialize Firestore client
