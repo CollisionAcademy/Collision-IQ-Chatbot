@@ -1,39 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Collision IQ Chatbot</title>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Collision IQ Chatbot</title>
+    <link
+      rel="stylesheet"
+      href="https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/themes/df-messenger-default.css"
+    />
+    <script
+      src="https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/df-messenger.js"
+    ></script>
+  </head>
+  <body>
+    <df-messenger
+      location="us-central1"
+      project-id="collision-academy-chatbot"
+      agent-id="c7c65f2f-7511-4668-a28f-f78b44625f3c"
+      language-code="en"
+      max-query-length="1"
+    >
+      <df-messenger-chat-bubble
+        chat-title="Collision IQ"
+      ></df-messenger-chat-bubble>
+    </df-messenger>
 
-  <!-- Dialogflow Messenger styles -->
-  <link rel="stylesheet" href="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.min.css">
-
-  <!-- Dialogflow Messenger library -->
-  <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.min.js"></script>
-
-  <style>
-    df-messenger {
-      --df-messenger-font-color: #000;
-      --df-messenger-font-family: "Google Sans", sans-serif;
-      --df-messenger-chat-background: #f3f6fc;
-      --df-messenger-message-user-background: #d3e3fd;
-      --df-messenger-message-bot-background: #fff;
-      position: fixed;
-      bottom: 16px;
-      right: 16px;
-      z-index: 999;
-    }
-  </style>
-</head>
-<body>
-  <!-- Chatbot Widget -->
-  <df-messenger
-    location="us-central1"
-    project-id="collision-academy-chatbot"
-    agent-id="c7cd65f2-7511-4668-a28f-f7b844625f3c"
-    language-code="en"
-    chat-title="Collision IQ">
-    <df-messenger-chat-bubble chat-title="Collision IQ"></df-messenger-chat-bubble>
-  </df-messenger>
-</body>
+    <style>
+      df-messenger {
+        z-index: 999;
+        position: fixed;
+        --df-messenger-font-color: #000;
+        --df-messenger-font-family: Google Sans;
+        --df-messenger-chat-background: #f3f6fc;
+        --df-messenger-message-user-background: #d3e3fd;
+        --df-messenger-message-bot-background: #fff;
+        bottom: 16px;
+        right: 16px;
+      }
+    </style>
+  </body>
 </html>
