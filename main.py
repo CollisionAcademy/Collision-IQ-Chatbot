@@ -1,6 +1,7 @@
 import os
 import json
 import base64
+import requests
 from firebase_admin import credentials, firestore, initialize_app
 from flask import Flask, request, jsonify
 
@@ -23,25 +24,34 @@ app = Flask(__name__)
 def index():
     return "✅ Flask app is running!"
 
-@app.route("/", methods=["POST"])
+@app.route("/webhook", methods=["POST"])
 def webhook():
-    req = request.get_json()
-    user_input = req.get("text", "").lower().strip()
+    user_input = request.get_json().get("text", "").strip()
+    if not user_input:
+        return jsonify({"error": "No input provided"}), 400
 
-    docs = db.collection("oem_procedures").where("keyword", "==", user_input).stream()
-    response = "❌ No matching procedure found."
+    # Gemini API call
+    gemini_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+    headers = {
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "contents": [{
+            "parts": [{"text": user_input}]
+        }]
+    }
 
-    for doc in docs:
-        data = doc.to_dict()
-        response = data.get("procedure", response)
-        break
+    response = requests.post(
+        f"{gemini_url}?key={os.environ.get('GEMINI_API_KEY')}",
+        headers=headers,
+        json=payload
+    )
 
-    return jsonify({
-        "fulfillment_response": {
-            "messages": [{"text": {"text": [response]}}]
-        }
-    })
+    if response.status_code == 200:
+        reply = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+        return jsonify({"response": reply})
+    else:
+        return jsonify({"error": response.text}), response.status_code
 
 if __name__ == "__main__":
     app.run(debug=True)
-
