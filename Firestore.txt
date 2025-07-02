@@ -1,0 +1,32 @@
+const {Firestore} = require('@google-cloud/firestore');
+const firestore = new Firestore();
+
+exports.chatbot = async (req, res) => {
+  const {userId, sessionId, lang, message, images} = req.body;
+  let ctx = await firestore.collection('sessions').doc(sessionId).get();
+  ctx = ctx.exists ? ctx.data() : {lang};
+
+  // if no lang, respond with language selector template
+
+  // build Gemini prompt:
+  const prompt = `${templates[lang].system}\nUser: ${message}\nAssistant:`;
+  // add images if present via GCS link
+
+  // call Gemini API
+  const geminiRes = await callGemini(prompt);
+
+  // parse structured reply: determine intent (submit, status, policy...)
+
+  // if submit: store claim draft in Firestore
+
+  // if status: lookup Firestore / external API
+
+  // cache / update session context
+  await firestore.collection('sessions').doc(sessionId).set({
+    ...ctx,
+    lastMessage: message,
+    lastResponse: geminiRes.text,
+  }, {merge: true});
+
+  res.send({reply: geminiRes.text});
+};

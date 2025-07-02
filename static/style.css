@@ -1,0 +1,147 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f4f4;
+}
+
+.chat-container {
+  max-width: 420px;
+  height: 100vh;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  overflow: hidden;
+}
+
+.chat-header {
+  background-color: #222;
+  color: #fff;
+  padding: 12px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.chat-log {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  font-size: 14px;
+}
+
+.chat-log div {
+  margin-bottom: 10px;
+}
+
+.user {
+  text-align: right;
+  color: #444;
+}
+
+.bot {
+  text-align: left;
+  color: #0077cc;
+}
+
+.chat-input-container {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+  background-color: #fafafa;
+}
+
+#langSelect {
+  padding: 4px;
+  margin-right: 5px;
+}
+
+#userInput {
+  flex: 1;
+  padding: 6px;
+  margin-right: 5px;
+  font-size: 14px;
+}
+
+button {
+  padding: 6px 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+=======
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f4f4;
+}
+
+.chat-container {
+  max-width: 420px;
+  height: 100vh;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  overflow: hidden;
+}
+
+.chat-header {
+  background-color: #222;
+  color: #fff;
+  padding: 12px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.chat-log {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  font-size: 14px;
+}
+
+.chat-log div {
+  margin-bottom: 10px;
+}
+
+.user {
+  text-align: right;
+  color: #444;
+}
+
+.bot {
+  text-align: left;
+  color: #0077cc;
+}
+
+.chat-input-container {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+  background-color: #fafafa;
+}
+
+#langSelect {
+  padding: 4px;
+  margin-right: 5px;
+}
+
+#userInput {
+  flex: 1;
+  padding: 6px;
+  margin-right: 5px;
+  font-size: 14px;
+}
+
+button {
+  padding: 6px 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
