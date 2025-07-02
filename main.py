@@ -3,8 +3,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import os
 import json
-import firebase_admin
-from firebase_admin import credentials
+import base64
 
 # Load base64-encoded string from environment variable
 encoded = os.environ["GOOGLE_APPLICATION_KEY"]
@@ -15,20 +14,15 @@ decoded = base64.b64decode(encoded).decode("utf-8")
 # Parse the JSON string
 cred_json = json.loads(decoded)
 
-# Initialize Firebase app with credentials
-cred = credentials.Certificate(cred_json)
-firebase_admin.initialize_app(cred)
-
-# Initialize Flask
-app = Flask("main")
-
-# Load Firebase credentials from environment
-cred_json = json.loads(os.environ["GOOGLE_APPLICATION_CREDENTIALS_JSON"])
+# Initialize Firebase app
 cred = credentials.Certificate(cred_json)
 firebase_admin.initialize_app(cred)
 
 # Firestore client
 db = firestore.client()
+
+# Initialize Flask
+app = Flask(__name__)
 
 @app.route("/", methods=["POST"])
 def webhook():
@@ -50,7 +44,6 @@ def webhook():
         }
     })
 
-# Optional health check route
 @app.route("/", methods=["GET"])
 def index():
     return "✅ Flask app is running!"
