@@ -1,35 +1,33 @@
-from flask import Flask, request, jsonify
-import firebase_admin
-from firebase_admin import credentials, firestore
 import os
 import json
 import base64
+from firebase_admin import credentials, firestore, initialize_app
+from flask import Flask, request, jsonify
 
-# Load base64-encoded string from environment variable
+# Decode base64-encoded credentials from environment
 encoded = os.environ["GOOGLE_APPLICATION_KEY"]
-
-# Decode base64 to JSON string
 decoded = base64.b64decode(encoded).decode("utf-8")
-
-# Parse the JSON string
 cred_json = json.loads(decoded)
 
-# Initialize Firebase app
+# Initialize Firebase
 cred = credentials.Certificate(cred_json)
-firebase_admin.initialize_app(cred)
+initialize_app(cred)
 
 # Firestore client
 db = firestore.client()
 
-# Initialize Flask
+# Flask app setup
 app = Flask(__name__)
+
+@app.route("/", methods=["GET"])
+def index():
+    return "✅ Flask app is running!"
 
 @app.route("/", methods=["POST"])
 def webhook():
     req = request.get_json()
     user_input = req.get("text", "").lower().strip()
 
-    # Firestore query
     docs = db.collection("oem_procedures").where("keyword", "==", user_input).stream()
     response = "❌ No matching procedure found."
 
@@ -44,10 +42,6 @@ def webhook():
         }
     })
 
-@app.route("/", methods=["GET"])
-def index():
-    return "✅ Flask app is running!"
-
-# Enable direct execution
 if __name__ == "__main__":
     app.run(debug=True)
+
