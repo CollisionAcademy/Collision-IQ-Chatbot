@@ -3,6 +3,21 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import os
 import json
+import firebase_admin
+from firebase_admin import credentials
+
+# Load base64-encoded string from environment variable
+encoded = os.environ["GOOGLE_APPLICATION_KEY"]
+
+# Decode base64 to JSON string
+decoded = base64.b64decode(encoded).decode("utf-8")
+
+# Parse the JSON string
+cred_json = json.loads(decoded)
+
+# Initialize Firebase app with credentials
+cred = credentials.Certificate(cred_json)
+firebase_admin.initialize_app(cred)
 
 # Initialize Flask
 app = Flask("main")
