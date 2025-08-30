@@ -1,10 +1,13 @@
+// client/src/App.jsx
 import React, { useState } from "react";
 
+// One source of truth for the API base
 const apiBase = String(import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
 if (!apiBase) throw new Error("Missing API base URL. Set VITE_API_URL.");
 const ENDPOINT = "/api/messages";
 
-function pickReply(data) {
+// Robust extractor: works with {reply}, {message}, OpenAI-like shapes, or plain text
+function pickReplyFrom(data) {
   return (
     data?.reply ??
     data?.message ??
@@ -19,6 +22,7 @@ function pickReply(data) {
 async function postOnce(message, onMeta) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15_000);
+
   try {
     const started = performance.now();
     const res = await fetch(`${apiBase}${ENDPOINT}`, {
@@ -32,14 +36,17 @@ async function postOnce(message, onMeta) {
     const contentType = res.headers.get("content-type") || "";
     onMeta?.({ status: res.status, ms, contentType });
 
+    // Prefer JSON
     if (contentType.includes("application/json")) {
       const data = await res.json();
-      if (!res.ok) throw new Error(`HTTP ${res.status} — ${JSON.stringify(data).slice(0,200)}`);
-      const reply = pickReply(data);
+      if (!res.ok) throw new Error(`HTTP ${res.status} — ${JSON.stringify(data).slice(0, 200)}`);
+      const reply = pickReplyFrom(data);
       return (reply && String(reply).trim()) || "(empty reply)";
     }
+
+    // Fallback to text
     const raw = await res.text();
-    if (!res.ok) throw new Error(`HTTP ${res.status} — ${raw.slice(0,200)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status} — ${raw.slice(0, 200)}`);
     if (/^\s*<!doctype html/i.test(raw)) return "(server returned HTML; check VITE_API_URL + ENDPOINT)";
     return raw.trim() || "(empty reply)";
   } finally {
@@ -52,15 +59,17 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [lastPost, setLastPost] = useState(null);
+  const [lastPost, setLastPost] = useState(null); // {status, ms, contentType}
 
   async function sendMessage() {
     const msg = input.trim();
     if (!msg || loading) return;
+
     setMessages((m) => m.concat({ sender: "You", text: msg }));
     setInput("");
     setLoading(true);
     setError(null);
+
     try {
       const reply = await postOnce(msg, (meta) => setLastPost(meta));
       setMessages((m) => m.concat({ sender: "Bot", text: reply }));
@@ -86,12 +95,22 @@ export default function App() {
         {!import.meta.env.PROD ? <span style={{ color: "#2ecc71" }}> — DEBUG BUILD ✅</span> : null}
       </h1>
 
+      {/* Debug line */}
       <div style={{ fontSize: 12, color: "#666", marginBottom: 8 }}>
         API_BASE: {apiBase}
         {lastPost ? `  |  Last POST: ${lastPost.status} (${lastPost.ms}ms)` : null}
       </div>
 
-      <div style={{ minHeight: 260, border: "1px solid #ccc", padding: 10, whiteSpace: "pre-wrap", overflowY: "auto", borderRadius: 6 }}>
+      <div
+        style={{
+          minHeight: 260,
+          border: "1px solid #ccc",
+          padding: 10,
+          whiteSpace: "pre-wrap",
+          overflowY: "auto",
+          borderRadius: 6,
+        }}
+      >
         {messages.map((m, i) => (
           <div key={i} style={{ margin: "6px 0" }}>
             <strong>{m.sender}:</strong> {m.text}
