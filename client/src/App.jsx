@@ -1,0 +1,142 @@
+// client/src/App.jsx
+import React, { useState } from "react";
+
+// ONE source of truth for the API base (strip trailing slash)
+const apiBase = String(import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
+if (!apiBase) throw new Error("Missing API base URL. Set VITE_API_URL.");
+
+const ENDPOINT = "/api/messages"; // canonical endpoint
+
+async function postOnce(message, onMeta) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15_000);
+
+  try {
+    const started = performance.now();
+
+    const res = await fetch(`${apiBase}${ENDPOINT}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      // send a simple {message}; server accepts either shape
+      body: JSON.stringify({ message }),
+      signal: controller.signal,
+    });
+
+    const ms = Math.round(performance.now() - started);
+    const contentType = res.headers.get("content-type") || "";
+    const raw = await res.clone().text();
+    onMeta?.({ status: res.status, ms, contentType });
+
+    console.log("🧪 Raw response:", raw);
+    console.log("🧪 Content-Type:", contentType);
+
+    if (!res.ok) {
+      // surface server's text/html/json error (helps when diagnosing)
+      throw new Error(
+        `HTTP ${res.status}${raw ? ` — ${raw.slice(0, 200)}` : ""}`
+      );
+    }
+
+    if (contentType.includes("application/json")) {
+      try {
+        const data = JSON.parse(raw);
+        return data.reply ?? "(empty reply)";
+      } catch (e) {
+        console.error("JSON parse error:", e);
+      }
+    }
+    return raw || "(empty reply)";
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+export default function App() {
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState([]); // {sender, text}[]
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [lastPost, setLastPost] = useState(null); // {status, ms, contentType}
+
+  async function sendMessage() {
+    const msg = input.trim();
+    if (!msg || loading) return;
+
+    setMessages((m) => m.concat({ sender: "You", text: msg }));
+    setInput("");
+    setLoading(true);
+    setError(null);
+
+    try {
+      const reply = await postOnce(msg, (meta) => setLastPost(meta));
+      setMessages((m) => m.concat({ sender: "Bot", text: reply }));
+    } catch (e) {
+      console.error("fetch error:", e);
+      setError(e.message || "Request failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function onKeyDown(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  return (
+    <div
+      style={{
+        maxWidth: 720,
+        margin: "40px auto",
+        fontFamily: "system-ui, Arial, sans-serif",
+      }}
+    >
+      <h1>
+        Collision-IQ Chatbot
+        {!import.meta.env.PROD ? <span style={{color:'#2ecc71'}}> — DEBUG BUILD ✅</span> : null}
+      </h1>
+
+      {/* Debug line */}
+      <div style={{ fontSize: 12, color: "#666", marginBottom: 8 }}>
+        API_BASE: {apiBase}
+        {lastPost ? `  |  Last POST: ${lastPost.status} (${lastPost.ms}ms)` : null}
+      </div>
+
+      <div
+        style={{
+          minHeight: 260,
+          border: "1px solid #ccc",
+          padding: 10,
+          whiteSpace: "pre-wrap",
+          overflowY: "auto",
+          borderRadius: 6,
+        }}
+      >
+        {messages.map((m, i) => (
+          <div key={i} style={{ margin: "6px 0" }}>
+            <strong>{m.sender}:</strong> {m.text}
+          </div>
+        ))}
+        {loading && <div style={{ color: "#888" }}>Sending…</div>}
+        {error && <div style={{ color: "#b00020" }}>Error: {error}</div>}
+      </div>
+
+      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+        <input
+          id="chat-input"
+          name="message"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={onKeyDown}
+          placeholder="Type your message…"
+          style={{ flex: 1, padding: 8, borderRadius: 4, border: "1px solid #ccc" }}
+        />
+        <button onClick={sendMessage} disabled={loading || !input.trim()}>
+          Send
+        </button>
+      </div>
+    </div>
+  );
+}
