@@ -5,3 +5,4 @@ serviceAccountKey.json
 *.sqlite3
 instance/
 *.log
+.vercel
