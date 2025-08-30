@@ -13,7 +13,7 @@ COPY . .
 
 # Env + port
 ENV NODE_ENV=production
-ENV PORT=8080
+ENV PORT=8800
 
 # Start the server
 CMD ["node", "server.js"]
