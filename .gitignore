@@ -11,6 +11,7 @@ __pycache__/
 
 # Logs and debug
 *.log
+<<<<<<< HEAD
 *.sqlite3
 
 # Node-related
@@ -31,3 +32,17 @@ api/dist/
 # Dependencies
 package-lock.json
 package.json
+=======
+.vercel
+node_modules/
+client/node_modules/
+api/node_modules/
+dist/
+client/dist/
+api/dist/
+.env
+.env.*
+*.log
+.DS_Store
+.vscode/
+>>>>>>> 642b32c (fix(api): CORS allowlist + preflight; add .gitignore and update api deps)

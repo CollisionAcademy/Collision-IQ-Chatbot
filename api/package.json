@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "API server for Collision IQ chatbot",
   "type": "module",
+<<<<<<< HEAD
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -15,10 +16,15 @@
   "license": "MIT",
   "engines": {
     "node": ">=18"
+=======
+  "scripts": {
+    "start": "node server.js"
+>>>>>>> 642b32c (fix(api): CORS allowlist + preflight; add .gitignore and update api deps)
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
     "cors": "^2.8.5",
+<<<<<<< HEAD
     "dotenv": "^16.3.1",
     "express": "^4.19.2",
     "googleapis": "^160.0.0",
@@ -26,5 +32,9 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
+=======
+    "express": "^4.19.2",
+    "@google/generative-ai": "^0.11.3"
+>>>>>>> 642b32c (fix(api): CORS allowlist + preflight; add .gitignore and update api deps)
   }
 }
