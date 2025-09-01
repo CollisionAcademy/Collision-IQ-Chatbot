@@ -99,10 +99,9 @@ export default function App() {
 
       {/* Dev-only debug line (hidden in prod) */}
       {!import.meta.env.PROD && (
-        <div style={{ fontSize: 12, color: "#666", marginBottom: 8 }}>
-          API_BASE: {apiBase}
-          {lastPost ? `  |  Last POST: ${lastPost.status} (${lastPost.ms}ms)` : null}
-        </div>
+       <div style={{ fontSize: 12, color: "#666", marginBottom: 8 }}>
+        API_BASE: {apiBase}{lastPost ? ` |  Last POST: ${lastPost.status} (${lastPost.ms}ms)` : null}
+       </div>
       )}
 
       <div
