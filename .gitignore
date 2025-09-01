@@ -6,3 +6,14 @@ serviceAccountKey.json
 instance/
 *.log
 .vercel
+node_modules/
+client/node_modules/
+api/node_modules/
+dist/
+client/dist/
+api/dist/
+.env
+.env.*
+*.log
+.DS_Store
+.vscode/
