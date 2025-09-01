@@ -1,49 +1,72 @@
-// api/server.js
 import express from "express";
-import cors from 'cors';
+import cors from "cors";
 
-const allowed = new Set([
-  'https://collision-iq.com',
-  'https://www.collision-iq.com',
-  // keep previews while you need them:
-  // (or replace with your single preview URL when you’re done)
+const app = express();
+
+// --- CORS allowlist ---
+const allowedOrigins = new Set([
+  "https://collision-iq.com",
+  "https://www.collision-iq.com"
+  "https://api.collision-iq.com",
 ]);
+const corsOptions = {
+  origin: (origin, cb) =>
+    !origin || allowedOrigins.has(origin) ? cb(null, true) : cb(new Error("Not allowed by CORS")),
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  maxAge: 86400,
+};
+
+// Allow only your project's Vercel preview URLs like:
+// https://collision-iq-frontend-<hash>.vercel.app
+const previewRegex = /^https:\/\/collision-iq-frontend-[a-z0-9-]+\.vercel\.app$/;
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;            // curl/postman
+  if (allowedOrigins.has(origin)) return true;
+  if (previewRegex.test(origin)) return true;
+  return false;
+}
 
 const corsOptions = {
-  origin(origin, cb) {
-    if (!origin) return cb(null, true); // curl/postman
-    if (allowed.has(origin)) return cb(null, true);
-    if (origin.endsWith('.vercel.app')) return cb(null, true); // temp
-    return cb(new Error('Not allowed by CORS'));
-  },
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: (origin, cb) => (isAllowedOrigin(origin) ? cb(null, true) : cb(new Error("Not allowed by CORS"))),
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   maxAge: 86400,
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 
-// Health checks
-app.get('/healthz', (_req, res) => {
-  res.status(200).json({ ok: true });
+// --- Health endpoints (Cloud Run/Load balancers use these) ---
+app.get("/healthz", (_req, res) => res.status(200).json({ ok: true }));
+app.get("/_ah/health", (_req, res) => res.status(200).send("ok"));
+
+// --- Root landing ---
+app.get("/", (_req, res) => {
+  res.type("text/plain").send("API is running!");
 });
 
-// For Google-style health checks (optional but nice to have)
-app.get('/_ah/health', (_req, res) => {
-  res.status(200).send('ok');
+// --- Chat handler (replace with your model call when ready) ---
+async function chatHandler(req, res) {
+  try {
+    const { message, messages } = req.body ?? {};
+    const text = message ?? messages?.[0]?.content ?? "";
+    const reply = text ? `Echo: ${text}` : "Hello from API";
+    res.json({ reply });
+  } catch (err) {
+    console.error("chat error:", err);
+    res.status(500).json({ error: "server_error" });
+  }
+}
+
+// Canonical path:
+app.post("/api/messages", chatHandler);
+// Optional compatibility alias:
+app.post("/chat", chatHandler);
+
+// --- Start server ---
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`API listening on ${PORT}`);
 });
-
-// Chat handler (accepts {message} or {messages:[{content}]})
-const chatHandler = async (req, res) => {
-  const msg = req.body?.message ?? req.body?.messages?.[0]?.content ?? "";
-  res.json({ reply: msg ? `Echo: ${msg}` : "Hello from Collision-IQ API" });
-};
-
-app.post("/api/messages", chatHandler); // canonical
-app.post("/api/message", chatHandler);  // alias
-app.post("/chat", chatHandler);         // legacy alias
-
-const port = process.env.PORT || 8080;
-app.listen(port, () => console.log(`API listening on ${port}`));
