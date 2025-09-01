@@ -29,10 +29,15 @@ app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 app.use(express.json());
 
-// Health + root
-app.get("/_ah/health", (req, res) => res.status(200).send("ok"));
-app.get("/healthz", (req, res) => res.status(200).send("ok"));
-app.get("/", (req, res) => res.status(200).send("API is running!"));
+// Health checks
+app.get('/healthz', (_req, res) => {
+  res.status(200).json({ ok: true });
+});
+
+// For Google-style health checks (optional but nice to have)
+app.get('/_ah/health', (_req, res) => {
+  res.status(200).send('ok');
+});
 
 // Chat handler (accepts {message} or {messages:[{content}]})
 const chatHandler = async (req, res) => {
