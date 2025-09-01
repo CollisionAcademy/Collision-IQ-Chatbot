@@ -1,27 +1,23 @@
 // api/server.js
 import express from "express";
-import cors from "cors";
+import cors from 'cors';
 
-const app = express();
-app.set("trust proxy", 1);
-
-// ⬇️ CORS config (put your snippet here)
-const allowedOrigins = new Set([
-  "http://localhost:5173",
-  "https://collision-iq.com",
-  "https://www.collision-iq.com",
-  "https://collision-iq-frontend.vercel.app", // keep your stable alias
+const allowed = new Set([
+  'https://collision-iq.com',
+  'https://www.collision-iq.com',
+  // keep previews while you need them:
+  // (or replace with your single preview URL when you’re done)
 ]);
 
 const corsOptions = {
-  origin: (origin, cb) => {
-    if (!origin) return cb(null, true);               // curl/postman
-    if (allowedOrigins.has(origin)) return cb(null, true);
-    if (origin.endsWith(".vercel.app")) return cb(null, true); // any vercel preview
-    return cb(new Error("Not allowed by CORS"));
+  origin(origin, cb) {
+    if (!origin) return cb(null, true); // curl/postman
+    if (allowed.has(origin)) return cb(null, true);
+    if (origin.endsWith('.vercel.app')) return cb(null, true); // temp
+    return cb(new Error('Not allowed by CORS'));
   },
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   maxAge: 86400,
 };
 
