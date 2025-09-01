@@ -1,13 +1,14 @@
 // client/src/App.jsx
 import React, { useState } from "react";
 
-// One source of truth for the API base
+// ---- One source of truth for the API base (strip trailing slash) ----
 const apiBase = String(import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
-if (!apiBase) throw new Error("Missing API base URL. Set VITE_API_URL.");
-const ENDPOINT = "/api/messages";
+if (!apiBase) throw new Error("Missing API base URL. Set VITE_API_URL in your env.");
 
-// Robust extractor: works with {reply}, {message}, OpenAI-like shapes, or plain text
-function pickReplyFrom(data) {
+const ENDPOINT = "/api/messages"; // canonical path used by the server
+
+// Unified extractor for various JSON shapes (Gemini, OpenAI, custom)
+function extractReplyFromJSON(data) {
   return (
     data?.reply ??
     data?.message ??
@@ -36,18 +37,19 @@ async function postOnce(message, onMeta) {
     const contentType = res.headers.get("content-type") || "";
     onMeta?.({ status: res.status, ms, contentType });
 
-    // Prefer JSON
+    // Prefer JSON if the server sent it
     if (contentType.includes("application/json")) {
       const data = await res.json();
       if (!res.ok) throw new Error(`HTTP ${res.status} — ${JSON.stringify(data).slice(0, 200)}`);
-      const reply = pickReplyFrom(data);
+      const reply = extractReplyFromJSON(data);
       return (reply && String(reply).trim()) || "(empty reply)";
     }
 
-    // Fallback to text
+    // Fallback to text for visibility
     const raw = await res.text();
     if (!res.ok) throw new Error(`HTTP ${res.status} — ${raw.slice(0, 200)}`);
-    if (/^\s*<!doctype html/i.test(raw)) return "(server returned HTML; check VITE_API_URL + ENDPOINT)";
+    if (/^\s*<!doctype html/i.test(raw))
+      return "(server returned HTML; check VITE_API_URL + ENDPOINT)";
     return raw.trim() || "(empty reply)";
   } finally {
     clearTimeout(timeout);
@@ -56,7 +58,7 @@ async function postOnce(message, onMeta) {
 
 export default function App() {
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([]); // [{sender, text}]
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastPost, setLastPost] = useState(null); // {status, ms, contentType}
@@ -95,11 +97,13 @@ export default function App() {
         {!import.meta.env.PROD ? <span style={{ color: "#2ecc71" }}> — DEBUG BUILD ✅</span> : null}
       </h1>
 
-      {/* Debug line */}
-      <div style={{ fontSize: 12, color: "#666", marginBottom: 8 }}>
-        API_BASE: {apiBase}
-        {lastPost ? `  |  Last POST: ${lastPost.status} (${lastPost.ms}ms)` : null}
-      </div>
+      {/* Dev-only debug line (hidden in prod) */}
+      {!import.meta.env.PROD && (
+        <div style={{ fontSize: 12, color: "#666", marginBottom: 8 }}>
+          API_BASE: {apiBase}
+          {lastPost ? `  |  Last POST: ${lastPost.status} (${lastPost.ms}ms)` : null}
+        </div>
+      )}
 
       <div
         style={{
