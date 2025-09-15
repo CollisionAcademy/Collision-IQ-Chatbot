@@ -1,0 +1,56 @@
+const express = require('express');
+const axios = require('axios');
+const { google } = require('googleapis');
+const router = express.Router();
+
+// GOOGLE DRIVE AUTH SETUP
+const auth = new google.auth.GoogleAuth({
+  scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+  keyFile: './service-account.json', // or use env variables
+});
+const drive = google.drive({ version: 'v3', auth });
+
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+router.post('/messages', async (req, res) => {
+  const userMessage = req.body.message;
+
+  try {
+    // 1. Fetch file content from Google Drive
+    const fileId = 'YOUR_FILE_ID_HERE';
+    const fileResponse = await drive.files.get(
+      { fileId, alt: 'media' },
+      { responseType: 'text' }
+    );
+    const driveContent = fileResponse.data;
+
+    // 2. Construct prompt for Gemini
+    const prompt = `
+You are a helpful assistant. Use the following context from a Google Drive document to answer the question.
+
+Context:
+${driveContent}
+
+Question:
+${userMessage}
+    `.trim();
+
+    // 3. Call Gemini API
+    const geminiResponse = await axios.post(
+      `${GEMINI_API_URL}?key=${GEMINI_API_KEY}`,
+      {
+        contents: [{ parts: [{ text: prompt }] }]
+      }
+    );
+
+    const reply = geminiResponse.data.candidates?.[0]?.content?.parts?.[0]?.text || 'No answer';
+
+    res.json({ reply });
+  } catch (error) {
+    console.error('Error:', error.message);
+    res.status(500).json({ error: 'Internal error', trace: error.message });
+  }
+});
+
+module.exports = router;
