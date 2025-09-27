@@ -1,11 +1,11 @@
 import { google } from "googleapis";
-import fs from "fs";
-import pdfParse from "pdf-parse";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getPdfText } from "./getPdfText.js";
+import { getDocText } from "./getDocText.js";
 
 /* ----------------- CONFIG ----------------- */
-const DRIVE_FILE_ID = "1xoFF0VuqR_mCXgH9QkcI5xifWlTCmY7N"; // Replace with your real Drive fileId
-const KEYFILE_PATH = "./service-account.json"; // Service account key
+const DRIVE_FILE_ID = "1xoFF0VuqR_mCXgH9QkcI5xifWlTCmY7N";
+const KEYFILE_PATH = "./service-account.json";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 /* ----------------- GOOGLE DRIVE ----------------- */
@@ -15,40 +15,6 @@ const auth = new google.auth.GoogleAuth({
 });
 
 const drive = google.drive({ version: "v3", auth });
-
-/* Google Docs → plain text */
-async function getDocText(fileId) {
-  const res = await drive.files.export({
-    fileId,
-    mimeType: "text/plain",
-  });
-  return res.data;
-}
-
-/* PDFs → download from Drive, parse with pdf-parse */
-async function getPdfText(fileId) {
-  // Download the file from Google Drive
-  const res = await drive.files.get(
-    { fileId, alt: "media" },
-    { responseType: "stream" }
-  );
-
-  const tempFile = "temp.pdf"; // always use this local temp file
-  const dest = fs.createWriteStream(tempFile);
-
-  await new Promise((resolve, reject) => {
-    res.data.pipe(dest).on("finish", resolve).on("error", reject);
-  });
-
-  // Parse with pdf-parse
-  const dataBuffer = fs.readFileSync(tempFile);
-  const parsed = await pdfParse(dataBuffer);
-
-  // Delete the temp file
-  fs.unlinkSync(tempFile);
-
-  return parsed.text;
-}
 
 /* ----------------- TEXT CHUNKING ----------------- */
 function chunkText(text, chunkSize = 500) {
