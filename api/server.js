@@ -1,9 +1,11 @@
 // api/server.js
-// Node ESM file (package.json should have `"type": "module"`)
-
 import express from "express";
 import cors from "cors";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { google } from "googleapis"; // 🔄 NEW
+import dotenv from "dotenv"; // 🔄 NEW
+
+dotenv.config(); // 🔄 Load .env (if using locally)
 
 const app = express();
 
@@ -13,12 +15,10 @@ const allowedOrigins = new Set([
   "https://collision-iq.com",
   "https://www.collision-iq.com",
 ]);
-
-// keep vercel preview builds allowed while you're developing
 const vercelPreviewRegex = /^https:\/\/.+\.vercel\.app$/i;
 
 function isAllowedOrigin(origin) {
-  if (!origin) return true; // curl/postman
+  if (!origin) return true;
   if (allowedOrigins.has(origin)) return true;
   if (vercelPreviewRegex.test(origin)) return true;
   return false;
@@ -29,7 +29,7 @@ const corsOptions = {
     isAllowedOrigin(origin) ? cb(null, true) : cb(new Error("Not allowed by CORS")),
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  maxAge: 86400, // cache preflight for 24h
+  maxAge: 86400,
 };
 
 app.use(cors(corsOptions));
@@ -44,11 +44,12 @@ app.get("/", (_req, res) => {
   res.type("text/plain").send("API is running!");
 });
 
-/* ------------------------- G E M I N I ------------------------------ */
+/* ------------------------ E N V  &  C O N F I G ---------------------- */
 const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+const DRIVE_FILE_ID = process.env.GOOGLE_DRIVE_FILE_ID || ""; // 🔄 NEW
 
-// tiny helper to squeeze a message string out of varied shapes
+/* ------------------------- G E M I N I ------------------------------ */
 function coerceMessage(body = {}) {
   const { message, messages } = body ?? {};
   if (typeof message === "string" && message.trim()) return message.trim();
@@ -70,8 +71,22 @@ async function runGemini(prompt) {
   return result.response.text();
 }
 
+/* --------------------- G O O G L E   D R I V E ---------------------- */
+async function fetchDriveFileContent(fileId) {
+  const auth = new google.auth.GoogleAuth({
+    scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+  });
+  const drive = google.drive({ version: "v3", auth });
+
+  const response = await drive.files.get(
+    { fileId, alt: "media" },
+    { responseType: "text" }
+  );
+
+  return response.data;
+}
+
 /* ------------------------- C H A T  A P I --------------------------- */
-// Canonical path (keep the frontend pointed here)
 app.post("/api/messages", async (req, res) => {
   try {
     const text = coerceMessage(req.body);
@@ -79,28 +94,43 @@ app.post("/api/messages", async (req, res) => {
       return res.status(400).json({ error: "missing_message", details: "Send { message: string }" });
     }
 
-    // If the key is not wired yet, return a helpful reply instead of 500
     if (!GEMINI_KEY) {
       return res.json({
-        reply:
-          "Gemini API key is not set on the server. Add GEMINI_API_KEY to Cloud Run (or Secret Manager) to enable model replies.",
+        reply: "Gemini API key is not set on the server. Add GEMINI_API_KEY to Cloud Run (or Secret Manager) to enable model replies.",
       });
     }
 
-    // Optional: prepend a light system instruction
-    const systemPreamble =
-      "You are Collision-IQ's helpful assistant. Be concise and accurate.";
+    // 🔄 Fetch content from Google Drive file (optional)
+    let context = "";
+    if (DRIVE_FILE_ID) {
+      try {
+        context = await fetchDriveFileContent(DRIVE_FILE_ID);
+      } catch (err) {
+        console.warn("Drive content error:", err.message);
+        context = ""; // fallback to no context
+      }
+    }
 
-    const reply = await runGemini(`${systemPreamble}\n\nUser: ${text}`);
+    // 🔄 Add Drive context into prompt
+    const systemPreamble = "You are Collision-IQ's helpful assistant. Be concise and accurate.";
+    const prompt = `
+${systemPreamble}
+
+Context from document:
+${context}
+
+User:
+${text}
+    `.trim();
+
+    const reply = await runGemini(prompt);
     return res.json({ reply: reply?.trim() || "(empty reply)" });
   } catch (err) {
     console.error("chat error:", err);
-    // Return a short, structured error
     return res.status(500).json({ error: "server_error" });
   }
 });
 
-// Optional backwards-compatibility alias (not used by the UI)
 app.post("/chat", (req, res, next) => app._router.handle(req, res, next));
 
 /* ------------------------- S T A R T  ------------------------------- */
