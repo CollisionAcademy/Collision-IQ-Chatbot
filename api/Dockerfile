@@ -1,19 +1,33 @@
-# Small, fast, reliable
-FROM node:20-alpine
+# Use official Node.js 18 image
+FROM node:18-slim AS build
 
-# App dir
+# Set working directory
 WORKDIR /app
 
-# Install only what's needed to run
+# Copy package files and install dependencies
 COPY package*.json ./
-RUN npm ci --omit=dev || npm install --omit=dev
+RUN npm install
 
-# App source
+# Copy all source files
 COPY . .
 
-# Env + port
+# Optional: build step (only needed if your backend needs to compile assets)
+# RUN npm run build || echo "No build step found"
+
+# ---------- Runtime stage ----------
+FROM node:18-slim AS runtime
+
+WORKDIR /app
 ENV NODE_ENV=production
-ENV PORT=8080
+
+# Copy only production dependencies and source
+COPY --from=build /app/package*.json ./
+RUN npm install --omit=dev
+
+COPY --from=build /app .
+
+# Expose port for Cloud Run
+EXPOSE 8080
 
 # Start the server
-CMD ["node", "server.js"]
+CMD ["npm", "start"]
