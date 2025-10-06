@@ -45,4 +45,3 @@ api/dist/
 *.log
 .DS_Store
 .vscode/
->>>>>>> 642b32c (fix(api): CORS allowlist + preflight; add .gitignore and update api deps)
