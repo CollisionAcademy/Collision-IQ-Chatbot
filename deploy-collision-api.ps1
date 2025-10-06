@@ -1,77 +1,55 @@
-# ==============================
-# 🚀 Collision-IQ API Deployment Script
-# ==============================
+Write-Host "🚀 Starting Collision-IQ API Deployment..." -ForegroundColor Cyan
 
-Write-Host "🔧 Checking Environment..." -ForegroundColor Cyan
-
-# --- Variables ---
-$projectRoot = "C:\Users\Colli\Desktop\Collision-IQ-Chatbot"
-$apiPath = "$projectRoot\api"
-$gcloudPath = "C:\Users\Colli\Desktop\google-cloud-sdk\bin\gcloud.cmd"
+# --- Check Python Path ---
 $pythonPath = "C:\Users\Colli\AppData\Local\Programs\Python\Python312\python.exe"
-
-# --- Verify Paths ---
-if (-Not (Test-Path $apiPath)) {
-    Write-Host "❌ API folder not found at: $apiPath" -ForegroundColor Red
-    exit 1
-}
-
-if (-Not (Test-Path $gcloudPath)) {
-    Write-Host "❌ gcloud not found at: $gcloudPath" -ForegroundColor Red
-    exit 1
-}
-
 if (-Not (Test-Path $pythonPath)) {
-    Write-Host ⚠️ Python not found at expected location: $pythonPath" -ForegroundColor Yellow
+    Write-Host "❌ Python not found at $pythonPath" -ForegroundColor Red
+    exit 1
 } else {
-    Write-Host "✅ Python found at: $pythonPath"
+    Write-Host "✅ Python found at: $pythonPath" -ForegroundColor Green
 }
 
-# --- Verify .env File ---
-$envPath = "$apiPath\.env"
+# --- Check for .env file ---
+$envPath = "C:\Users\Colli\Desktop\Collision-IQ-Chatbot\api\.env"
 if (-Not (Test-Path $envPath)) {
-    Write-Host "❌ .env file missing in $apiPath" -ForegroundColor Red
+    Write-Host "❌ Missing .env file at $envPath" -ForegroundColor Red
     exit 1
+} else {
+    Write-Host "✅ Found .env file" -ForegroundColor Green
 }
 
-Write-Host "✅ .env file found at $envPath"
-
-# --- Check API Key ---
-$envContent = Get-Content $envPath | Out-String
-if ($envContent -match "GEMINI_API_KEY=(.+)") {
-    $key = $Matches[1]
-    $hiddenKey = $key.Substring(0,5) + "..." + $key.Substring($key.Length - 4)
-    Write-Host "✅ GEMINI_API_KEY loaded: $hiddenKey"
-} else {
-    Write-Host "❌ GEMINI_API_KEY missing from .env" -ForegroundColor Red
-    exit 1
+# --- Load .env values ---
+$envVars = Get-Content $envPath | Where-Object { $_ -match "=" } | ForEach-Object {
+    $parts = $_ -split "=", 2
+    [PSCustomObject]@{ Key = $parts[0].Trim(); Value = $parts[1].Trim() }
 }
 
-# --- Verify gcloud Authentication ---
-Write-Host "🔐 Checking gcloud login..."
-& $gcloudPath auth list | Out-Host
+# --- Set Cloud Run env vars ---
+foreach ($var in $envVars) {
+    $key = $var.Key
+    $value = $var.Value
+    if ($key -and $value) {
+        Write-Host "🌍 Setting $key" -ForegroundColor Yellow
+        gcloud run services update collision-iq-api `
+          --region us-central1 `
+          --set-env-vars "$key=$value" `
+          --quiet
+    }
+}
 
-# --- Confirm Config ---
-Write-Host "`n📋 gcloud configuration:" -ForegroundColor Cyan
-& $gcloudPath config list
+# --- Deploy Service ---
+Write-Host "🚢 Deploying to Cloud Run..." -ForegroundColor Cyan
+gcloud run deploy collision-iq-api `
+  --source "./api" `
+  --region us-central1 `
+  --allow-unauthenticated `
+  --quiet
 
-# --- Deploy API to Cloud Run ---
-Write-Host "`n🚀 Deploying Collision-IQ API to Cloud Run..." -ForegroundColor Green
-& $gcloudPath run deploy collision-iq-api `
-    --source $apiPath `
-    --region us-central1 `
-    --allow-unauthenticated `
-    --quiet
-
-# --- Fetch Deployment URL ---
-Write-Host "`n🌐 Fetching Service URL..." -ForegroundColor Cyan
-$serviceUrl = & $gcloudPath run services describe collision-iq-api `
-    --region us-central1 `
-    --format="value(status.url)"
-
-if ($serviceUrl) {
-    Write-Host "`n✅ Deployment complete!" -ForegroundColor Green
-    Write-Host "🔗 API Live at: $serviceUrl" -ForegroundColor Yellow
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "✅ Deployment successful!" -ForegroundColor Green
+    $url = gcloud run services describe collision-iq-api --region us-central1 --format="value(status.url)"
+    Write-Host "🌐 API URL: $url" -ForegroundColor Cyan
 } else {
-    Write-Host "⚠️ Could not fetch service URL — check Cloud Console manually." -ForegroundColor Yellow
+    Write-Host "❌ Deployment failed!" -ForegroundColor Red
+    exit 1
 }
