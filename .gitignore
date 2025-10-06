@@ -17,3 +17,7 @@ api/dist/
 *.log
 .DS_Store
 .vscode/
+*.json
+!package.json
+firebase.json
+*.serviceAccount*.json
