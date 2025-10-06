@@ -1,77 +1,48 @@
 // api/server.js
 import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { google } from "googleapis"; // 🔄 NEW
-import dotenv from "dotenv"; // 🔄 NEW
+import { google } from "googleapis";
 
-dotenv.config(); // 🔄 Load .env (if using locally)
+// Load environment variables
+dotenv.config();
 
 const app = express();
 
-/* ----------------------- C O R S  (allowlist) ----------------------- */
-const allowedOrigins = new Set([
-  "http://localhost:5173",
-  "https://collision-iq.com",
-  "https://www.collision-iq.com",
-]);
-const vercelPreviewRegex = /^https:\/\/.+\.vercel\.app$/i;
-
-function isAllowedOrigin(origin) {
-  if (!origin) return true;
-  if (allowedOrigins.has(origin)) return true;
-  if (vercelPreviewRegex.test(origin)) return true;
-  return false;
-}
-
-const corsOptions = {
-  origin: (origin, cb) =>
-    isAllowedOrigin(origin) ? cb(null, true) : cb(new Error("Not allowed by CORS")),
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  maxAge: 86400,
-};
-
-app.use(cors(corsOptions));
+/* ------------------- Middleware ------------------- */
+app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 
-/* ------------------------- H E A L T H  ----------------------------- */
-app.get("/healthz", (_req, res) => res.status(200).json({ ok: true }));
-app.get("/_ah/health", (_req, res) => res.status(200).send("ok"));
+/* ------------------- Health Checks ------------------- */
+app.get("/", (_req, res) => res.type("text/plain").send("API is running!"));
+app.get("/healthz", (_req, res) => res.json({ ok: true }));
 
-/* --------------------------- R O O T -------------------------------- */
-app.get("/", (_req, res) => {
-  res.type("text/plain").send("API is running!");
-});
-
-/* ------------------------ E N V  &  C O N F I G ---------------------- */
+/* ------------------- Config ------------------- */
 const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
-const DRIVE_FILE_ID = process.env.GOOGLE_DRIVE_FILE_ID || ""; // 🔄 NEW
+const DRIVE_FILE_ID = process.env.GOOGLE_DRIVE_FILE_ID || "";
 
-/* ------------------------- G E M I N I ------------------------------ */
-function coerceMessage(body = {}) {
-  const { message, messages } = body ?? {};
-  if (typeof message === "string" && message.trim()) return message.trim();
-  if (Array.isArray(messages) && messages[0]?.content) return String(messages[0].content);
-  return "";
-}
-
+/* ------------------- Gemini ------------------- */
 async function runGemini(prompt) {
+  if (!GEMINI_KEY) throw new Error("Missing GEMINI_API_KEY");
+
   const genAI = new GoogleGenerativeAI(GEMINI_KEY);
   const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
 
-  const result = await model.generateContent([
-    {
-      role: "user",
-      parts: [{ text: prompt }],
-    },
-  ]);
+  const result = await model.generateContent({
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: prompt }],
+      },
+    ],
+  });
 
   return result.response.text();
 }
 
-/* --------------------- G O O G L E   D R I V E ---------------------- */
+/* ------------------- Google Drive ------------------- */
 async function fetchDriveFileContent(fileId) {
   const auth = new google.auth.GoogleAuth({
     scopes: ["https://www.googleapis.com/auth/drive.readonly"],
@@ -86,55 +57,50 @@ async function fetchDriveFileContent(fileId) {
   return response.data;
 }
 
-/* ------------------------- C H A T  A P I --------------------------- */
+/* ------------------- Chat Endpoint ------------------- */
 app.post("/api/messages", async (req, res) => {
   try {
-    const text = coerceMessage(req.body);
+    const text = req.body?.message?.trim();
     if (!text) {
-      return res.status(400).json({ error: "missing_message", details: "Send { message: string }" });
+      return res
+        .status(400)
+        .json({ error: "missing_message", details: "Send { message: string }" });
     }
 
     if (!GEMINI_KEY) {
       return res.json({
-        reply: "Gemini API key is not set on the server. Add GEMINI_API_KEY to Cloud Run (or Secret Manager) to enable model replies.",
+        reply:
+          "Gemini API key is not set on the server. Add GEMINI_API_KEY to your environment.",
       });
     }
 
-    // 🔄 Fetch content from Google Drive file (optional)
+    // Optional Drive context
     let context = "";
     if (DRIVE_FILE_ID) {
       try {
         context = await fetchDriveFileContent(DRIVE_FILE_ID);
       } catch (err) {
-        console.warn("Drive content error:", err.message);
-        context = ""; // fallback to no context
+        console.warn("⚠️ Drive fetch failed:", err.message);
+        context = "";
       }
     }
 
-    // 🔄 Add Drive context into prompt
-    const systemPreamble = "You are Collision-IQ's helpful assistant. Be concise and accurate.";
-    const prompt = `
-${systemPreamble}
+    // Build prompt
+    const systemPrompt = `You are Collision-IQ's helpful assistant. Be concise and accurate.`;
+    const prompt = `${systemPrompt}\n\nContext:\n${context}\n\nUser: ${text}`;
 
-Context from document:
-${context}
-
-User:
-${text}
-    `.trim();
-
+    // Run Gemini
     const reply = await runGemini(prompt);
+
     return res.json({ reply: reply?.trim() || "(empty reply)" });
   } catch (err) {
-    console.error("chat error:", err);
-    return res.status(500).json({ error: "server_error" });
+    console.error("❌ Chat error:", err);
+    return res.status(500).json({ error: "server_error", details: err.message });
   }
 });
 
-app.post("/chat", (req, res, next) => app._router.handle(req, res, next));
-
-/* ------------------------- S T A R T  ------------------------------- */
+/* ------------------- Start Server ------------------- */
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log(`API listening on ${PORT}`);
+  console.log(`✅ API listening on port ${PORT}`);
 });
