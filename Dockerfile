@@ -1,15 +1,17 @@
-# Root-level Dockerfile for backend API in ./api
-FROM node:18-slim
+# Root Dockerfile for the Python app (main.py)
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy only backend
-COPY api/package*.json ./ 
-RUN npm install --omit=dev
+# Copy source
+COPY . /app
 
-# Copy the rest of the API
-COPY api ./api
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-WORKDIR /app/api
+# Expose port used by the app
+ENV PORT 8080
 EXPOSE 8080
-CMD ["npm", "start"]
+
+# Run the main Python app
+CMD ["python", "main.py"]
