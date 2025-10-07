@@ -1,5 +1,4 @@
-# ---------- Build stage
-FROM node:18-slim AS build
+FROM python:3.11-slim
 WORKDIR /app
 
 # Install dependencies (including dev deps for any build step)
