@@ -69,14 +69,12 @@ async function callGemini(prompt) {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash-latest" });
 
-    console.log("🧠 Sending prompt to Gemini:", prompt);
+    console.log("🧠 Sending prompt:", prompt);
 
-    const result = await model.generateContent({
-      contents: [{ parts: [{ text: prompt }] }],
-    });
-
+    const result = await model.generateContent(prompt); // ✅ simplified correct call
     const reply = await result.response.text();
-    console.log("✅ Gemini reply:", reply);
+
+    console.log("✅ Gemini response:", reply);
     return { reply: reply.trim() };
   } catch (err) {
     console.error("❌ Gemini model error:", JSON.stringify(err, null, 2));
