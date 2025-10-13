@@ -60,17 +60,16 @@ const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
 
 async function callGemini(prompt) {
-  if (!GEMINI_KEY) {
+  if (!process.env.GEMINI_API_KEY) {
     console.warn("⚠️ GEMINI_API_KEY missing!");
     return { reply: "Server missing Gemini API key. Please configure it." };
   }
 
   try {
-    const genAI = new GoogleGenerativeAI(GEMINI_KEY);
-    const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const result = await model.generateContent(prompt);
-
     return { reply: result.response.text().trim() };
   } catch (err) {
     console.error("❌ Gemini model error:", err.message);
