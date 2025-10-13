@@ -61,24 +61,25 @@ const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
 
 async function callGemini(prompt) {
   if (!process.env.GEMINI_API_KEY) {
-    console.warn("⚠️ GEMINI_API_KEY missing!");
-    return { reply: "Server missing Gemini API key. Please configure it." };
+    console.error("❌ Missing GEMINI_API_KEY");
+    return { reply: "Server misconfigured. Missing API key." };
   }
 
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({
-      model: "models/gemini-1.5-flash-latest",
-    });
+    const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash-latest" });
+
+    console.log("🧠 Sending prompt to Gemini:", prompt);
 
     const result = await model.generateContent({
       contents: [{ parts: [{ text: prompt }] }],
     });
 
-    const replyText = await result.response.text();
-    return { reply: replyText.trim() };
+    const reply = await result.response.text();
+    console.log("✅ Gemini reply:", reply);
+    return { reply: reply.trim() };
   } catch (err) {
-    console.error("❌ Gemini model error:", err.message);
+    console.error("❌ Gemini model error:", JSON.stringify(err, null, 2));
     return { reply: "Error calling Gemini model." };
   }
 }
