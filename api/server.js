@@ -67,13 +67,15 @@ async function callGemini(prompt) {
 
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash-latest" });
+    const model = genAI.getGenerativeModel({
+      model: "models/gemini-1.5-flash-latest",
+    });
 
-  const result = await model.generateContent({
-  contents: [{ parts: [{ text: prompt }] }],
-  });
+    const result = await model.generateContent({
+      contents: [{ parts: [{ text: prompt }] }],
+    });
 
-    const replyText = result.response.text();
+    const replyText = await result.response.text();
     return { reply: replyText.trim() };
   } catch (err) {
     console.error("❌ Gemini model error:", err.message);
