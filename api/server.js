@@ -12,6 +12,7 @@ const allowedOrigins = new Set([
   "http://localhost:5173",
   "https://collision-iq.com",
   "https://www.collision-iq.com",
+  "https://collision-iq.vercel.app", // add this if you’re testing previews
 ]);
 
 // Allow vercel previews during development
