@@ -69,12 +69,7 @@ async function callGemini(prompt) {
     const genAI = new GoogleGenerativeAI(GEMINI_KEY);
     const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
 
-    const result = await model.generateContent([
-      {
-        role: "user",
-        parts: [{ text: prompt }],
-      },
-    ]);
+    const result = await model.generateContent(prompt);
 
     return { reply: result.response.text().trim() };
   } catch (err) {
