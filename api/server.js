@@ -10,9 +10,9 @@ const app = express();
 /* ----------------------- CORS Configuration ----------------------- */
 const allowedOrigins = new Set([
   "http://localhost:5173",
+  "https://collision-iq-chatbot-j41t.vercel.app",
   "https://collision-iq.com",
-  "https://www.collision-iq.com",
-  "https://collision-iq.vercel.app", // add this if you’re testing previews
+  "https://www.collision-iq.com"
 ]);
 
 // Allow vercel previews during development
