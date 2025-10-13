@@ -69,8 +69,11 @@ async function callGemini(prompt) {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const result = await model.generateContent([prompt]);
-    const replyText = await result.response.text();
+  const result = await model.generateContent({
+  contents: [{ parts: [{ text: prompt }] }],
+  });
+
+    const replyText = result.response.text();
     return { reply: replyText.trim() };
   } catch (err) {
     console.error("❌ Gemini model error:", err.message);
