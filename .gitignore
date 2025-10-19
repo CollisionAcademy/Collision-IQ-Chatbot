@@ -48,3 +48,4 @@ api/dist/
 .env
 node_modules/
 __pycache__/
+service-account.json
