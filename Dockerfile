@@ -1,30 +1,26 @@
-FROM python:3.11-slim
+# --- Stage 1: Install dependencies ---
+FROM node:20-slim AS build
 WORKDIR /app
 
-# Install dependencies (including dev deps for any build step)
+# Install dependencies
 COPY package*.json ./
 RUN npm install
 
-# Copy source
+# Copy source files
 COPY . .
 
-# If you have a front-end build (e.g., Vite/React), run it
-RUN npm run build || echo "No build script, skipping build."
-
-# ---------- Runtime stage
-FROM node:18-slim AS runtime
+# --- Stage 2: Production runtime ---
+FROM node:20-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Only production deps for lean runtime
+# Install only prod dependencies
 COPY --from=build /app/package*.json ./
 RUN npm install --omit=dev
 
-# Bring built artifacts and server code
-COPY --from=build /app ./
+# Copy built app from build stage
+COPY --from=build /app .
 
-# Cloud Run listens on PORT (default 8080)
 EXPOSE 8080
 
-# Start the server (root app.js)
 CMD ["npm", "start"]
