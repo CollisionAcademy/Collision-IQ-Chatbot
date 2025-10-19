@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 
-const KEYFILE_PATH = "./service-account.json"; // Path to your JSON key
+const KEYFILE_PATH = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
 async function checkAuth() {
   try {

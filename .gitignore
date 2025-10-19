@@ -49,3 +49,8 @@ api/dist/
 node_modules/
 __pycache__/
 service-account.json
+# Secrets
+*.json
+!package.json
+!tsconfig.json
+!vercel.json
