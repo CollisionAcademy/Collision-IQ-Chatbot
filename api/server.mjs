@@ -26,7 +26,14 @@ app.post('/', async (req, res) => {
     });
 
     const result = await model.generateContent(prompt);
-    const response = result.response.text();
+
+// Safely check if response and text method exist
+if (!result?.response?.text) {
+  console.error("Invalid response structure from Gemini:", result);
+  return res.status(500).json({ error: "Invalid Gemini API response." });
+}
+
+ const reply = await result.response.text();
 
     res.json({ reply: response });
   } catch (err) {
