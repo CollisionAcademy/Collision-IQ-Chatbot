@@ -22,7 +22,7 @@ app.post('/', async (req, res) => {
 
     // ✅ Use model from .env or fallback
     const model = genAI.getGenerativeModel({
-      model: process.env.GEMINI_MODEL || 'models/gemini-1.5-pro',
+      model: process.env.GEMINI_MODEL || 'models/gemini-1.5-pro-latest',
     });
 
     const result = await model.generateContent(prompt);
