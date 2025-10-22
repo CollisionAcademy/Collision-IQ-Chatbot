@@ -6,6 +6,14 @@ import express from 'express';
 import cors from 'cors';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY, {
+  apiVersion: "v1",
+});
+
+const model = genAI.getGenerativeModel({
+  model: process.env.GEMINI_MODEL || 'gemini-1.5-pro',
+});
+
 const app = express();
 app.use(cors());
 app.use(express.json());
