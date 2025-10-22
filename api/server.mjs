@@ -31,7 +31,7 @@ app.post('/', async (req, res) => {
 
     const model = genAI.getGenerativeModel({
       // ✅ Use working model name (not -latest!)
-      model: process.env.GEMINI_MODEL || 'models/gemini-1.5-pro',
+      model: process.env.GEMINI_MODEL || 'gemini-1.5-pro',
     });
 
     const result = await model.generateContent(prompt);
