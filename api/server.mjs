@@ -25,9 +25,7 @@ app.post('/', async (req, res) => {
   }
 
   try {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY, {
-      apiVersion: "v1"
-    });
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
     const model = genAI.getGenerativeModel({
       // ✅ Use working model name (not -latest!)
