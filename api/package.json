@@ -4,20 +4,14 @@
   "description": "API server for Collision IQ chatbot",
   "type": "module",
   "scripts": {
-    "start": "node api/server.mjs",
-    "dev": "nodemon api/server.mjs",
+    "start": "node server.mjs",
+    "dev": "nodemon server.mjs",
     "lint": "echo \"No linter configured\" && exit 0",
     "test": "echo \"No tests configured\" && exit 0"
   },
-  "keywords": [
-    "Collision",
-    "chatbot",
-    "collision-iq"
-  ],
+  "keywords": ["Collision", "chatbot", "collision-iq"],
   "license": "MIT",
-  "engines": {
-    "node": ">=18"
-  },
+  "engines": { "node": ">=18" },
   "dependencies": {
     "@google/generative-ai": "^0.6.0",
     "cors": "^2.8.5",
